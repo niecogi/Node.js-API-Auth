@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const cors = require('cors');
 //IMPORTS ROUTES
 const authRoute = require('./routes/auth');
 const postsRoute = require('./routes/posts');
@@ -18,9 +19,12 @@ mongoose.connect(
 //middleware
 app.use(express.json());
 
+//enabled CORS 
+app.use(cors());
+
 //Route Middleware
 app.use('/api/user',authRoute)
 //Route Middleware
 app.use('/api/posts',postsRoute)
 
-app.listen(3000, () => console.log('Server UP and running'));
+app.listen(8080, () => console.log('Server UP and running'));
