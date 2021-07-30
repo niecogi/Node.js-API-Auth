@@ -15,6 +15,7 @@ const {
 router.post("/login", async (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
+ 
 
   const { error } = loginValidation(req.body);
   if (error) return res.status(400).send(error);
@@ -22,10 +23,9 @@ router.post("/login", async (req, res) => {
   const user = await User.findOne({ email: email });
   if (!user) {
     return res
-      .status(400)
-      .send(
-        "El correo electrónico que has introducido no está conectado a una cuenta."
-      );
+      .status(400);
+       
+        
   }
   //password correct?
   const validPass = await bcrypt.compare(password, user.password);
@@ -60,7 +60,7 @@ router.post("/register", async (req, res) => {
   //checking if the email is already in DB
   const emailExist = await User.findOne({ email: email });
   if (emailExist) {
-    return res.status(400).send("El correo electronico ya existe");
+    return res.status(409).send("El correo electronico ya existe");
   }
 
   // hash password
@@ -72,7 +72,7 @@ router.post("/register", async (req, res) => {
     email: email,
     password: hashedPassword,
   });
-
+/*
     // Generate test SMTP service account from ethereal.email
     // Only needed if you don't have a real mail account for testing
     let testAccount = await nodemailer.createTestAccount();
@@ -103,6 +103,7 @@ router.post("/register", async (req, res) => {
     // Preview only available when sending through an Ethereal account
     console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
     // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+    */
   try {
     const savedUser = await user.save();
     res.send({ user: user._id });
