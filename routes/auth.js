@@ -18,19 +18,19 @@ router.post("/login", async (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
 
-  console.log(token)
-  
+  console.log(token);
+
   const { error } = loginValidation(req.body);
   if (error) return res.status(400).send(error);
 
   let user;
   if (token) {
-    user = await User.findOne({token: token}).exec();
+    user = await User.findOne({ token: token }).exec();
   } else {
     user = await User.findOne({ email: email }).exec();
- 
+
     if (!user) {
-      return res.status(400);
+      return res.status(400).send();
     }
 
     //password correct?
@@ -41,22 +41,45 @@ router.post("/login", async (req, res) => {
         .send("La contraseña que has introducido es invalida.");
     }
   }
-  console.log(user)
+  console.log(user);
 
   if (!user) {
-    return res.status(400);
+    console.log('error');
+    return res.status(400).send();
   }
 
   //Create and anssign a token if it doesn't exist
   let authToken = user.token;
   if (!authToken) {
-    authToken = jwt.sign({ _id: user._id }, process.env.ACCESS_TOKEN_SECRET)
-    console.log('authToken', authToken, user._id)
+    authToken = jwt.sign({ _id: user._id }, process.env.ACCESS_TOKEN_SECRET);
+    console.log("authToken", authToken, user._id);
     await User.updateOne({ _id: user._id }, { token: authToken });
   }
 
   res.send({ user: omit(user.toObject(), ["password"]), token: authToken });
 });
+
+
+//Logout 
+router.post("/logout", async (req, res) => {
+  let token = req.body.token;
+  let user;
+  console.log('logout', token)
+  if (token) {
+    user = await User.findOne({ token: token }).exec();
+  } 
+  console.log('logout', user)
+    if (!user) {
+      return res.status(400).send();
+    }
+
+  await User.updateOne({ _id: user._id }, {$unset: {token: 1 }});
+
+  res.status(200).send();
+});
+
+
+
 
 // we need a body parser
 // and we need some time to submit to database so we need a
