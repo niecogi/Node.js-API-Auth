@@ -1,9 +1,10 @@
 const router = require("express").Router();
 const User = require("../model/User");
 const jwt = require("jsonwebtoken");
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
+const { omit, lte } = require("lodash");
 
 const {
   registerValidation,
@@ -13,40 +14,54 @@ const {
 //Login
 
 router.post("/login", async (req, res) => {
+  let token = req.body.token;
   let email = req.body.email;
   let password = req.body.password;
- 
 
+  console.log(token)
+  
   const { error } = loginValidation(req.body);
   if (error) return res.status(400).send(error);
 
-  const user = await User.findOne({ email: email });
+  let user;
+  if (token) {
+    user = await User.findOne({token: token}).exec();
+  } else {
+    user = await User.findOne({ email: email }).exec();
+ 
+    if (!user) {
+      return res.status(400);
+    }
+
+    //password correct?
+    const validPass = await bcrypt.compare(password, user.password);
+    if (!validPass) {
+      return res
+        .status(400)
+        .send("La contraseña que has introducido es invalida.");
+    }
+  }
+  console.log(user)
+
   if (!user) {
-    return res
-      .status(400);
-       
-        
-  }
-  //password correct?
-  const validPass = await bcrypt.compare(password, user.password);
-  if (!validPass) {
-    return res
-      .status(400)
-      .send("La contraseña que has introducido es invalida.");
+    return res.status(400);
   }
 
-//Create and anssign a token
-const token = jwt.sign({_id: user._id}, process.env.ACCESS_TOKEN_SECRET);
-res.header('auth-token',token).send(token);
+  //Create and anssign a token if it doesn't exist
+  let authToken = user.token;
+  if (!authToken) {
+    authToken = jwt.sign({ _id: user._id }, process.env.ACCESS_TOKEN_SECRET)
+    console.log('authToken', authToken, user._id)
+    await User.updateOne({ _id: user._id }, { token: authToken });
+  }
 
-res.send('Logged in!');
+  res.send({ user: omit(user.toObject(), ["password"]), token: authToken });
 });
 
 // we need a body parser
 // and we need some time to submit to database so we need a
 //async method
 //register
-
 
 router.post("/register", async (req, res) => {
   let name = req.body.name;
@@ -72,7 +87,7 @@ router.post("/register", async (req, res) => {
     email: email,
     password: hashedPassword,
   });
-/*
+  /*
     // Generate test SMTP service account from ethereal.email
     // Only needed if you don't have a real mail account for testing
     let testAccount = await nodemailer.createTestAccount();

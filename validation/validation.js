@@ -11,12 +11,18 @@ const registerValidation = (data) => {
     return schema.validate(data);
 };
 
+const schemaLoginToken = Joi.object({
+    token: Joi.string().required(),
+});
+
+const schemaLogin = Joi.object({
+    email: Joi.string().min(6).required().email(),
+    password: Joi.string().min(6).required(),
+});
+
 const loginValidation = (data) => {
-    const schema = Joi.object({
-        email: Joi.string().min(6).required().email(),
-        password: Joi.string().min(6).required(),
-    });
-    return schema.validate(data);
+    if (data.token) return schemaLoginToken.validate(data)
+    return schemaLogin.validate(data);
 };
 
 
