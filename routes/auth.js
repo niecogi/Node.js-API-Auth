@@ -26,8 +26,10 @@ router.post("/login", async (req, res) => {
   let user;
   if (token) {
     user = await User.findOne({ token: token }).exec();
+    console.log('token');
   } else {
     user = await User.findOne({ email: email }).exec();
+    console.log('user with email');
 
     if (!user) {
       return res.status(400).send();
@@ -50,6 +52,7 @@ router.post("/login", async (req, res) => {
 
   //Create and anssign a token if it doesn't exist
   let authToken = user.token;
+  console.log('user is ' + user);
   if (!authToken) {
     authToken = jwt.sign({ _id: user._id }, process.env.ACCESS_TOKEN_SECRET);
     console.log("authToken", authToken, user._id);
