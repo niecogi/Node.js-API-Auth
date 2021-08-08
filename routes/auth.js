@@ -12,7 +12,6 @@ const {
 } = require("../validation/validation");
 
 //Login
-
 router.post("/login", async (req, res) => {
   let token = req.body.token;
   let email = req.body.email;
