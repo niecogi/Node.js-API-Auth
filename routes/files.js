@@ -56,7 +56,7 @@ router.post("/file", async(req, res) => {
 // Get files from DB
 router.get(`/files`, async (req, res) => {
   console.log('he entrado en files auth token');
-  let token = req.params.authToken;
+  let token = req.query.authToken;
   console.log('auth token  files get' + token)
 
 
@@ -65,6 +65,7 @@ router.get(`/files`, async (req, res) => {
   }
   
   user = await User.findOne({ token: token }).exec();
+  console.log(user.email)
   
   if(!user){
     return res.status(400).send();
@@ -73,6 +74,7 @@ router.get(`/files`, async (req, res) => {
   files = await File.find({
     userID: user.email,
   })
+  console.log(files);
    
   return res.send(files);  
 
