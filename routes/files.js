@@ -74,9 +74,13 @@ router.get(`/files`, async (req, res) => {
   files = await File.find({
     userID: user.email,
   })
-  console.log(files);
+  let filesNames =[];
+  for(var i=0; i<files.length; i++){
+    filesNames[i] = files[i].fileName;
+  }
+  console.log(filesNames);
    
-  return res.send(files);  
+  return res.send(filesNames);  
 
 
 });
