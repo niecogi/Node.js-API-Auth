@@ -57,7 +57,6 @@ router.post("/login", async (req, res) => {
     console.log("authToken", authToken, user._id);
     await User.updateOne({ _id: user._id }, { token: authToken });
   }
-
   res.send({ user: omit(user.toObject(), ["password"]), token: authToken });
 });
 
@@ -88,10 +87,37 @@ router.post("/logout", async (req, res) => {
 //async method
 //register
 
+
+router.delete("/user",async (req, res) => {
+  let token = req.query.authToken;
+  let id ;
+  console.log(token);
+  try{
+    const user = await User.findOne({ token: token });
+    
+  }catch (err) {
+    console.log("No se ha encontrado usuario")
+    res.status(400).send();
+  }
+  id = user._id;
+  console.log(id)
+  
+try{
+  const userExists = await User.deleteOne({ _id: id});
+  if (!userExists) { res.status(400).send(err);}
+  res.status(200).send();
+}catch(err){
+  res.status(400).send(err);
+}
+   
+})
+
 router.post("/register", async (req, res) => {
   let name = req.body.name;
   let email = req.body.email;
   let password = req.body.password;
+  let subject = req.body.subject;
+  let course = req.body.course;
 
   //VALIDATE THE DATA BEFORE WE A USER
   const { error } = registerValidation(req.body);
@@ -111,6 +137,9 @@ router.post("/register", async (req, res) => {
     name: name,
     email: email,
     password: hashedPassword,
+    subject : subject,
+    course: course,
+
   });
   /*
     // Generate test SMTP service account from ethereal.email
@@ -146,7 +175,7 @@ router.post("/register", async (req, res) => {
     */
   try {
     const savedUser = await user.save();
-    res.send({ user: user._id });
+    res.send('user saved in database');
   } catch (err) {
     res.status(400).send(err);
   }

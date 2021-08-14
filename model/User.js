@@ -20,6 +20,13 @@ const userSchema = new mongoose.Schema({
         min: 6,
         max:1024
     },
+    course: mongoose.Schema.Types.Mixed,
+    subject :{
+        type: String,
+        required: true,
+        min: 3,
+        max: 255
+    },
     token :{
         type:String
     },

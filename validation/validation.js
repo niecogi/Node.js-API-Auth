@@ -6,7 +6,10 @@ const registerValidation = (data) => {
         name: Joi.string().min(3).required(),
         email: Joi.string().min(6).required().email(),
         password: Joi.string().min(6).required(),
-        repeat_password: Joi.ref('password')
+        repeat_password: Joi.ref('password'),
+        course: Joi.required(),
+        subject: Joi.string().min(3).required(),
+
     });
     return schema.validate(data);
 };
