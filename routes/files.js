@@ -85,4 +85,47 @@ router.get(`/files`, async (req, res) => {
 
 });
 
+
+router.delete("/file",async (req, res) => {
+  let token = req.query.authToken;
+  console.log(token);
+  let name = req.query.name;
+  let file;
+  let user ;
+
+  console.log(token);
+  try{
+     user = await User.findOne({ token: token });
+    
+  }catch (err) {
+    console.log("No se ha encontrado usuario")
+    res.status(400).send();
+  }
+  console.log(user);
+  email = user.email;
+  console.log(email)
+
+  console.log('nombre' + name);
+
+  try{
+
+    file = await File.findOne({ fileName:name, userID:email} );
+    console.log(file);
+    
+  }catch (err) {
+    console.log("No se ha encontrado file")
+    res.status(400).send();
+  }
+  
+try{
+  const fileExists = await File.deleteOne({_id:file._id});
+  if (!fileExists) { res.status(400).send(err);}
+  fs.unlinkSync(file.path);
+  res.status(200).send();
+}catch(err){
+  res.status(400).send(err);
+}
+   
+})
+
 module.exports = router;
