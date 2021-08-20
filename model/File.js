@@ -11,11 +11,10 @@ const fileSchema = new mongoose.Schema({
     fileName: {
         type:String,
         required: true,
-        min: 6,
-        max:1024
+        min: 3,
+        max:255
 
     },
-
     path: {
         required:true,
         type:String,

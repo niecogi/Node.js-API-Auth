@@ -26,7 +26,11 @@ router.post("/file", async(req, res) => {
   if (!fs.existsSync(path)) {
     fs.mkdirSync(path);
   }
+  fileAlreadyExists= await File.findOne({ fileName:file.name, userID:user.email} );
 
+  if(fileAlreadyExists) {
+    res.status(400).send("File already exists");
+  }else{
   file.mv(pathFile, (err) => {
     if (err) {
       console.error(err);
@@ -51,6 +55,7 @@ router.post("/file", async(req, res) => {
       filePath: `/uploads/${user.email}/${file.name}`,
     });
   });
+}
 });
 
 // Get files from DB
@@ -78,10 +83,34 @@ router.get(`/files`, async (req, res) => {
   for(var i=0; i<files.length; i++){
     filesNames[i] = files[i].fileName;
   }
-  console.log(filesNames);
+  console.log( "esto es lo que envio" + filesNames);
    
   return res.send(filesNames);  
 
+
+});
+
+router.get(`/file`, async (req, res) => {
+  let token = req.query.authToken;
+  let name = req.query.name;
+
+
+  if (token === null) {
+    return res.status(400).json({ msg: "No estás logeado" });
+  }
+  
+  user = await User.findOne({ token: token }).exec();
+  console.log(user.email)
+  
+  if(!user){
+    return res.status(400).send();
+  }
+  console.log('namefile' + name)
+  file = await File.findOne({ fileName:name, userID:user.email} );
+  let path = file.path;
+  console.log(file);
+  
+   res.sendFile(file.path);
 
 });
 
@@ -103,9 +132,6 @@ router.delete("/file",async (req, res) => {
   }
   console.log(user);
   email = user.email;
-  console.log(email)
-
-  console.log('nombre' + name);
 
   try{
 
