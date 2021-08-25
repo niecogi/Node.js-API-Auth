@@ -81,14 +81,10 @@ router.post("/logout", async (req, res) => {
   res.status(200).send();
 });
 
-
-
-
 // we need a body parser
 // and we need some time to submit to database so we need a
 //async method
 //register
-
 
 router.delete("/user",async (req, res) => {
   let token = req.query.authToken;
@@ -113,12 +109,6 @@ try{
 }
    
 })
-
-
-
-
-
-
 
 router.post('/reset-password', async(req,res) => {
   crypto.randomBytes(32,(err,buffer) => {
@@ -151,6 +141,27 @@ router.post('/reset-password', async(req,res) => {
         res.json({message: 'Check your email'});
       })
     })
+  })
+})
+
+router.post('/new-password', async(req,res) => {
+  const newPassword = req.body.password
+  const sentToken = req.body.token
+  User.findOne({resetToken:sentToken,expireToken:{$gt:Date.now()}})
+  .then(user=>{
+      if(!user){
+          return res.status(422).json({error:"La sesión ha expirado"})
+      }
+      bcrypt.hash(newPassword,12).then(hashedpassword=>{
+         user.password = hashedpassword
+         user.resetToken = undefined
+         user.expireToken = undefined
+         user.save().then((saveduser)=>{
+             res.json({message:"La contaseña se ha cambiado satisfactoriamente"})
+         })
+      })
+  }).catch(err=>{
+      console.log(err)
   })
 })
 router.post("/register", async (req, res) => {
