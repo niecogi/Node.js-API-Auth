@@ -6,6 +6,7 @@ const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const { omit, lte } = require("lodash");
 const transporter = require('../config/mailer');
+const crypto = require('crypto');
 
 const {
   registerValidation,
@@ -113,6 +114,45 @@ try{
    
 })
 
+
+
+
+
+
+
+router.post('/reset-password', async(req,res) => {
+  crypto.randomBytes(32,(err,buffer) => {
+    if(err) console.log(err);
+    const token = buffer.toString("hex");
+    User.findOne({email:req.body.email})
+    .then((user) => {
+      if(!user) return res.status(422).json({error: "user dont exists with that email"});
+      user.resetToken = token;
+      user.expireToken = Date.now() + 3600000; // 1h for reset password
+        let transporter = nodemailer.createTransport({
+          host: 'smtp.gmail.com',
+          port: 465,
+          secure: true, // true for 465, false for other ports
+          auth: {
+            user: 'spimapp21@gmail.com', // generated ethereal user
+            pass: 'xovn jmtb mwkz suta', // generated ethereal password
+          },
+        });
+      user.save().then((result) => {
+        transporter.sendMail({
+          to: user.email,
+          from: '"Spim UPV" <spimapp21@gmail.com>',
+          subject : "Cambio de contraseña",
+          html:` <p> Has solicitado cambiar la contraseña.</p>
+          <h5> Clica este <a href ="http://localhost:3000/reset/${token}"> link </a> para cambiar la contraseña </h5>
+          `
+
+        });
+        res.json({message: 'Check your email'});
+      })
+    })
+  })
+})
 router.post("/register", async (req, res) => {
   let name = req.body.name;
   let email = req.body.email;

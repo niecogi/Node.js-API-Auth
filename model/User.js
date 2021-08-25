@@ -30,6 +30,12 @@ const userSchema = new mongoose.Schema({
     token :{
         type:String
     },
+    resetToken:{
+         type: String
+    },
+    expireToken:{
+         type:Date
+    },
     date: {
         type: Date,
         default: Date.now
